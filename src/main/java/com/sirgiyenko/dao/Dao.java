@@ -1,5 +1,7 @@
 package com.sirgiyenko.dao;
 
+import com.sirgiyenko.businessExceptions.NetworkException;
+
 import java.util.Map;
 
 /**
@@ -9,9 +11,9 @@ public interface Dao {
 
     /**
      * Write given information to system.
-     * @param map an information to store.
-     * @throws Exception in case any issue occurred during storage attempt.
+     * @param stringData an information to store.
+     * @throws NetworkException in case any issue occurred during storage attempt.
      */
-    void saveObjectInformation(Map map);
+    boolean saveObjectInformation(String stringData);
 
 }

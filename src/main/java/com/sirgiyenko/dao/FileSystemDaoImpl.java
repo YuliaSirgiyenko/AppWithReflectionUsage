@@ -1,33 +1,38 @@
 package com.sirgiyenko.dao;
 
+import com.sirgiyenko.businessExceptions.NetworkException;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 public class FileSystemDaoImpl implements Dao {
 
     private static final File FILE = new File("JsonVisual.json");
 
-    public FileSystemDaoImpl(){
+    public FileSystemDaoImpl() throws NetworkException{
         if (!FILE.exists()){
             try {
                 FILE.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
+                throw new NetworkException("Network Exception");
             }
         }
     }
 
     @Override
-    public void saveObjectInformation(Map objectInfo) {
+    public boolean saveObjectInformation(String objectData) {
+        boolean flag = false;
         try (FileWriter writer = new FileWriter(FILE, false)){
-            writer.write(objectInfo.toString());
+            writer.write(objectData);
             writer.flush();
+            flag = true;
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return flag;
     }
 
 }

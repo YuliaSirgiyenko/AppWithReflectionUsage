@@ -17,8 +17,7 @@ public class App {
     public static void main(String[] args) {
 
         Human human = new Human("Yu", "Sirh",
-                "football", LocalDate.of(2005, 10, 10));
-
+                "football", LocalDate.of(2010, 10, 10));
         Dao dao = new FileSystemDaoImpl();
         ObjectParser objectParser = new ObjectParserImpl(dao);
         objectParser.toJson(human);

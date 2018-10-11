@@ -28,35 +28,46 @@ public class ObjectParserImpl implements ObjectParser {
 
         for (int i = 0; i < fields.length; i++) {
             fields[i].setAccessible(true);
-            if (fields[i].isAnnotationPresent(JsonValue.class)) {
-                fieldName = fields[i].getAnnotation(JsonValue.class).name();
-            } else {
-                fieldName = fields[i].getName();
-            }
+            fieldName = getFieldName(fields[i]);
 
             fieldValue = null;
             try {
                 if (fields[i].get(o) != null) {
-                    if (fields[i].isAnnotationPresent(CustomDateFormat.class)) {
-                        String ownFormat = fields[i].getAnnotation(CustomDateFormat.class).format();
-                        fieldValue = ((LocalDate) fields[i].get(o)).format(DateTimeFormatter.ofPattern(ownFormat));
-                    } else {
-                        fieldValue = fields[i].get(o).toString();
-                    }
+                    fieldValue = getFieldValue(fields[i], o);
                 }
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
 
             objectFieldsAndInitValues.put(fieldName, fieldValue);
-            }
+        }
 
-            String stringFromMap = toString(objectFieldsAndInitValues);
-            try {
-                dao.saveObjectInformation(stringFromMap);
-            } catch (NetworkException e) {
-                System.out.println("Network Exception");
+        try {
+            dao.saveObjectInformation(toString(objectFieldsAndInitValues));
+        } catch (NetworkException e) {
+            System.out.println("Network Exception");
+        }
+    }
+
+        private String getFieldName(Field field){
+            String fieldName;
+            if (field.isAnnotationPresent(JsonValue.class)) {
+                fieldName = field.getAnnotation(JsonValue.class).name();
+            } else {
+                fieldName = field.getName();
             }
+            return fieldName;
+        }
+
+        private Object getFieldValue(Field field, Object o) throws IllegalAccessException {
+        Object fieldValue = null;
+            if (field.isAnnotationPresent(CustomDateFormat.class)) {
+                String ownFormat = field.getAnnotation(CustomDateFormat.class).format();
+                fieldValue = ((LocalDate) field.get(o)).format(DateTimeFormatter.ofPattern(ownFormat));
+            } else {
+                fieldValue = field.get(o).toString();
+            }
+        return fieldValue;
         }
 
         @Override

@@ -1,20 +1,19 @@
 package com.sirgiyenko.dao;
 
 import com.sirgiyenko.businessExceptions.NetworkException;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Map;
 
 public class FileSystemDaoImpl implements Dao {
 
-    private static final File FILE = new File("JsonVisual.json");
+    private static File FileForApp;
 
-    public FileSystemDaoImpl() throws NetworkException{
-        if (!FILE.exists()){
+    public FileSystemDaoImpl(File file) throws NetworkException{
+        this.FileForApp = file;
+        if (!FileForApp.exists()){
             try {
-                FILE.createNewFile();
+                FileForApp.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new NetworkException("Network Exception");
@@ -25,7 +24,7 @@ public class FileSystemDaoImpl implements Dao {
     @Override
     public boolean saveObjectInformation(String objectData) {
         boolean flag = false;
-        try (FileWriter writer = new FileWriter(FILE, false)){
+        try (FileWriter writer = new FileWriter(FileForApp, false)){
             writer.write(objectData);
             writer.flush();
             flag = true;

@@ -13,7 +13,6 @@ import java.util.Map;
 public class ObjectParserImpl implements ObjectParser {
 
     Dao dao;
-    private Map objectFieldsAndInitValues = new LinkedHashMap<String, String>();
 
     public ObjectParserImpl(Dao dao){
         this.dao = dao;
@@ -21,20 +20,17 @@ public class ObjectParserImpl implements ObjectParser {
 
     @Override
     public void toJson(Object o) {
+        Map objectFieldsAndInitValues = new LinkedHashMap<String, String>();
         Class a = o.getClass();
         Field fields[] = a.getDeclaredFields();
         String fieldName;
-        Object fieldValue;
+        Object fieldValue = null;
 
         for (int i = 0; i < fields.length; i++) {
             fields[i].setAccessible(true);
             fieldName = getFieldName(fields[i]);
-
-            fieldValue = null;
             try {
-                if (fields[i].get(o) != null) {
-                    fieldValue = getFieldValue(fields[i], o);
-                }
+                fieldValue = returnFieldValue(fields[i], o);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
@@ -49,40 +45,58 @@ public class ObjectParserImpl implements ObjectParser {
         }
     }
 
-        private String getFieldName(Field field){
-            String fieldName;
-            if (field.isAnnotationPresent(JsonValue.class)) {
-                fieldName = field.getAnnotation(JsonValue.class).name();
-            } else {
-                fieldName = field.getName();
-            }
-            return fieldName;
+    private String getFieldName(Field field){
+        String fieldName;
+        if (field.isAnnotationPresent(JsonValue.class)) {
+            fieldName = field.getAnnotation(JsonValue.class).name();
+        } else {
+            fieldName = field.getName();
         }
+        return fieldName;
+    }
 
-        private Object getFieldValue(Field field, Object o) throws IllegalAccessException {
-        Object fieldValue = null;
-            if (field.isAnnotationPresent(CustomDateFormat.class)) {
-                String ownFormat = field.getAnnotation(CustomDateFormat.class).format();
-                fieldValue = ((LocalDate) field.get(o)).format(DateTimeFormatter.ofPattern(ownFormat));
-            } else {
-                fieldValue = field.get(o).toString();
-            }
+    private Object returnFieldValue(Field field, Object o) throws IllegalAccessException {
+        if (field.get(o) != null) {
+            return returnFieldValueInStringIfNotNull(field, o);
+        } else {
+            return null;
+        }
+    }
+
+    private String returnFieldValueInStringIfNotNull(Field field, Object o) throws IllegalAccessException {
+        String fieldValue = null;
+        if (field.isAnnotationPresent(CustomDateFormat.class)) {
+            String ownFormat = field.getAnnotation(CustomDateFormat.class).format();
+            fieldValue = ((LocalDate) field.get(o)).format(DateTimeFormatter.ofPattern(ownFormat));
+        } else {
+            fieldValue = field.get(o).toString();
+        }
         return fieldValue;
-        }
+    }
 
-        @Override
-        public String toString (Map mapToString){
+    @Override
+    public String toString (Map mapToString){
+        if (allMapValuesAreNull(mapToString)) {
+            return "{}";
+        } else {
             String resutledString = "{";
-
             for (Object key : mapToString.keySet()) {
                 if (mapToString.get(key) != null) {
                     resutledString = resutledString + "\"" + key + "\": \"" + mapToString.get(key) + "\", ";
                 }
             }
-
-            resutledString = resutledString.substring(0, resutledString.length() - 2);
-            return resutledString + "}";
+            return resutledString.substring(0, resutledString.length() - 2) + "}";
         }
+    }
 
+    private boolean allMapValuesAreNull(Map map){
+        boolean flag = true;
+        for (Object key : map.keySet()) {
+            if (map.get(key) != null) {
+                flag = false;
+            }
+        }
+        return flag;
+    }
 
 }

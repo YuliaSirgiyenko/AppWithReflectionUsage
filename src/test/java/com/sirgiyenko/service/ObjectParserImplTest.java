@@ -27,6 +27,7 @@ class ObjectParserImplTest {
         this.objectParser = new ObjectParserImpl(mockedDao);
     }
 
+
     @DisplayName("Method toJson - Happy case1 - Parse of object fields/values to String as Json format")
     @Test
     public void testCase1() {
@@ -62,9 +63,26 @@ class ObjectParserImplTest {
         assertThat(argumentCapture.getValue()).isEqualTo(expectedLineJsonFormat);
     }
 
-    @DisplayName("Method toJson - fail during storage")
+    @DisplayName("Method toJson - Happy case3 - Parse of object fields/values to String as Json format" +
+            "all values are NULL")
     @Test
     public void testCase3() {
+        //Given
+        Human mockedHuman = new Human(null, null,
+                null, null);
+        String expectedLineJsonFormat = "{}";
+
+        //When
+        objectParser.toJson(mockedHuman);
+
+        //Then
+        verify(mockedDao).saveObjectInformation(argumentCapture.capture());
+        assertThat(argumentCapture.getValue()).isEqualTo(expectedLineJsonFormat);
+    }
+
+    @DisplayName("Method toJson - fail during storage")
+    @Test
+    public void testCase4() {
         //Given
         Human mockedHuman = new Human("Human's First Name", "Human's Last name",
                 "Human's Hobby", LocalDate.of(2000, 1, 1));
